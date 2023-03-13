@@ -1,6 +1,10 @@
 # Photo Gallery App
 
-> Serverless application built for photo gallery. Admin users can upload and others can see the photos.
+> Serverless web application built to showcase and share photos. 
+> Admin users can upload and others can see the photos. There are option to share public photos as well.
+
+## Solution Diagram
+![alt text](./github/solution-diagram.jpg)
 
 ## Run Application
 ### Prerequisites
