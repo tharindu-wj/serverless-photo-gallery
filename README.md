@@ -4,7 +4,7 @@
 > Admin users can upload and others can see the photos. There is an option to share public photos as well.
 
 ## Solution Diagram
-![alt text](./github/solution-diagram.jpg)
+![alt text](./resources/solution-diagram.jpg)
 
 ## Run Application
 ### Prerequisites

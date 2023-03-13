@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "50d25f29-20da-4798-9b1e-cd2e98f2344c",
+		"name": "Photo Gallery App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4347754"
+	},
+	"item": [
+		{
+			"name": "GET Private Photos",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/photos-private",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"photos-private"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Public Photos",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/photos-public",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"photos-public"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST Upload Photo",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "visibility",
+							"value": "public",
+							"type": "text"
+						},
+						{
+							"key": "photo",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/photo",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"photo"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://lydsb46mhl.execute-api.us-west-1.amazonaws.com/dev",
+			"type": "string"
+		}
+	]
+}
