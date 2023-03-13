@@ -1,0 +1,18 @@
+{
+  "name": "Photo-Gallery",
+  "version": "1.0.0",
+  "description": "aws cloudformation deploy --template-file ./cloudFormation/resources.json --stack-name photo-gallery --capabilities CAPABILITY_IAM",
+  "main": "index.js",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "build": "cd lambdas/getPhotos && npm ci && cd ../../ && cd lambdas/uploadPhoto && npm ci && cd ../../ && cd frontend && npm ci && npm run build",
+    "package": "cd cloudFormation && aws cloudformation package --template template.json --s3-bucket photo-gallery-deployment-west --output-template-file packaged-template.json --use-json && cd ..",
+    "deploy": "cd cloudFormation && aws cloudformation deploy --template-file packaged-template.json --stack-name photo-gallery --capabilities CAPABILITY_IAM --region us-west-1 && cd .."
+  },
+  "keywords": [],
+  "author": "Tharindu Wickramasinghe",
+  "license": "MIT"
+}

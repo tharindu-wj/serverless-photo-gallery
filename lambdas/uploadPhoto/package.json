@@ -1,0 +1,22 @@
+{
+  "name": "uploadPhoto",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@middy/core": "^4.2.6",
+    "@middy/http-error-handler": "^4.2.6",
+    "@middy/http-header-normalizer": "^4.2.6",
+    "@middy/http-json-body-parser": "^4.2.6",
+    "@middy/http-multipart-body-parser": "^4.2.6",
+    "bunyan": "^1.8.15",
+    "uuid": "^9.0.0"
+  },
+  "scripts": {
+    "bundle": "zip -r uploadPhoto . && mv uploadPhoto.zip ../../artifacts"
+  },
+  "keywords": [],
+  "author": "Tharindu Wickramasinghe",
+  "license": "MIT"
+}

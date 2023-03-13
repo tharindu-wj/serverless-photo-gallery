@@ -1,0 +1,467 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Parameters": {
+    "HttpApiStageName": { "Type": "String", "Default": "dev" },
+    "PhotoS3BucketName": {
+      "Type": "String",
+      "Default": "tharindu-photo-gallery-west"
+    },
+    "FrontendS3BucketName": {
+      "Type": "String",
+      "Default": "tharindu-photo-gallery-website-west"
+    },
+    "PhotoMetaDynamoDBTableName": {
+      "Type": "String",
+      "Default": "photo-gallery"
+    },
+    "UserPoolName": {
+      "Type": "String",
+      "Default": "photo-gallery-user-pool-two"
+    },
+    "UserPoolHostedDomain": {
+      "Type": "String",
+      "Default": "photo-gallery-two"
+    },
+    "UserPoolCallbackUrl": {
+      "Type": "String",
+      "Default": "http://localhost:5500"
+    }
+  },
+  "Resources": {
+    "UploadPhotoFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": "../lambdas/uploadPhoto",
+        "FunctionName": "uploadPhoto",
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["UploadPhotoExecutionRole", "Arn"] },
+        "Runtime": "nodejs18.x",
+        "Timeout": 120,
+        "Environment": {
+          "Variables": {
+            "PHOTO_S3_BUCKET": { "Ref": "PhotoS3Bucket" },
+            "PHOTO_DYNAMODB_TABLE": { "Ref": "PhotoMetaDynamoDBTable" }
+          }
+        }
+      }
+    },
+    "UploadPhotoExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": "lambda.amazonaws.com" },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "lambda-execution-policy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["s3:PutObject"],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "PhotoS3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["dynamodb:PutItem"],
+                  "Resource": {
+                    "Fn::GetAtt": ["PhotoMetaDynamoDBTable", "Arn"]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "GetPhotosFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": "../lambdas/getPhotos",
+        "FunctionName": "getPhotos",
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["GetPhotosExecutionRole", "Arn"] },
+        "Runtime": "nodejs18.x",
+        "Timeout": 120,
+        "Environment": {
+          "Variables": {
+            "PHOTO_S3_BUCKET": { "Ref": "PhotoS3Bucket" },
+            "PHOTO_DYNAMODB_TABLE": { "Ref": "PhotoMetaDynamoDBTable" }
+          }
+        }
+      }
+    },
+    "GetPhotosExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": "lambda.amazonaws.com" },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "get-photos-lambda-execution-policy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["dynamodb:scan"],
+                  "Resource": {
+                    "Fn::GetAtt": ["PhotoMetaDynamoDBTable", "Arn"]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "PhotoS3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "PhotoS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "PhotoS3BucketName" },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        }
+      }
+    },
+    "FrontendS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "FrontendS3BucketName" },
+        "AccessControl": "PublicRead",
+        "WebsiteConfiguration": {
+          "IndexDocument": "index.html",
+          "ErrorDocument": "error.html"
+        },
+        "Tags": []
+      }
+    },
+    "FrontendS3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Id": "FrontendS3BucketPolicy",
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadForGetBucketObjects",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "FrontendS3Bucket"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        "Bucket": {
+          "Ref": "FrontendS3Bucket"
+        }
+      }
+    },
+    "PhotoMetaDynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "photoKey",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "visibility",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "photoKey",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "visibility",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": { "Ref": "PhotoMetaDynamoDBTableName" }
+      }
+    },
+    "UserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": { "Ref": "UserPoolName" },
+        "AutoVerifiedAttributes": ["email"],
+        "EmailVerificationSubject": "Verify your email address",
+        "EmailVerificationMessage": "Please click the link below to verify your email address:\n\n{####}",
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 6
+          }
+        }
+      }
+    },
+    "UserPoolAppClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "AllowedOAuthFlows": ["implicit"],
+        "AllowedOAuthScopes": ["email", "openid"],
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "ClientName": "photo-gallery-app-client",
+        "CallbackURLs": [{ "Ref": "UserPoolCallbackUrl" }],
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH"
+        ],
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "SupportedIdentityProviders": ["COGNITO"]
+      }
+    },
+    "UserPoolHostedUI": {
+      "Type": "AWS::Cognito::UserPoolDomain",
+      "Properties": {
+        "Domain": { "Ref": "UserPoolHostedDomain" },
+        "UserPoolId": {
+          "Ref": "UserPool"
+        }
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "Photo Gallery API Gateway",
+        "ProtocolType": "HTTP",
+        "CorsConfiguration": {
+          "AllowCredentials": true,
+          "AllowHeaders": ["authorization"],
+          "AllowMethods": ["GET", "POST", "OPTIONS"],
+          "AllowOrigins": ["http://*"]
+        }
+      }
+    },
+    "HttpApiStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "AutoDeploy": true,
+        "StageName": { "Ref": "HttpApiStageName" }
+      }
+    },
+    "HttpApiAuthorizer": {
+      "Type": "AWS::ApiGatewayV2::Authorizer",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "AuthorizerType": "JWT",
+        "IdentitySource": ["$request.header.Authorization"],
+        "JwtConfiguration": {
+          "Audience": [
+            {
+              "Ref": "UserPoolAppClient"
+            }
+          ],
+          "Issuer": {
+            "Fn::Sub": "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+          }
+        },
+        "Name": "JwtAuthorizer"
+      }
+    },
+    "HttpApiUploadPhotoIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "IntegrationMethod": "POST",
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadPhotoFunction.Arn}/invocations"
+        },
+        "PayloadFormatVersion": 1.0
+      }
+    },
+    "HttpApiUploadPhotoRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "HttpApiAuthorizer"
+        },
+        "RouteKey": "POST /photo",
+        "Target": {
+          "Fn::Sub": "integrations/${HttpApiUploadPhotoIntegration}"
+        }
+      }
+    },
+    "HttpApiPublicPhotosIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "IntegrationMethod": "POST",
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPhotosFunction.Arn}/invocations"
+        },
+        "PayloadFormatVersion": 1.0
+      }
+    },
+    "HttpApiPublicPhotosRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "AuthorizationType": "NONE",
+        "RouteKey": "GET /photos-public",
+        "Target": {
+          "Fn::Sub": "integrations/${HttpApiPublicPhotosIntegration}"
+        }
+      }
+    },
+    "HttpApiPrivatePhotosIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "IntegrationMethod": "POST",
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPhotosFunction.Arn}/invocations"
+        },
+        "PayloadFormatVersion": 1.0
+      }
+    },
+    "HttpApiPrivatePhotosRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "HttpApi"
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "HttpApiAuthorizer"
+        },
+        "RouteKey": "GET /photos-private",
+        "Target": {
+          "Fn::Sub": "integrations/${HttpApiPrivatePhotosIntegration}"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "FrontendUrl": {
+      "Value": {
+        "Fn::GetAtt": ["FrontendS3Bucket", "WebsiteURL"]
+      }
+    },
+    "HttpApiEndpoint": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            {
+              "Fn::GetAtt": ["HttpApi", "ApiEndpoint"]
+            },
+            "/",
+            { "Ref": "HttpApiStage" }
+          ]
+        ]
+      }
+    },
+    "CognitoSignupURL": {
+      "Value": {
+        "Fn::Sub": "https://${UserPoolHostedUI}.auth.${AWS::Region}.amazoncognito.com/oauth2/authorize?client_id=${UserPoolAppClient}&response_type=token&scope=email+openid&redirect_uri=${UserPoolCallbackUrl}"
+      }
+    }
+  }
+}

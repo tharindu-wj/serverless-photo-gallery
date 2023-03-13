@@ -1,0 +1,19 @@
+{
+  "name": "getPhotos",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@middy/core": "^4.2.6",
+    "@middy/http-error-handler": "^4.2.6",
+    "@middy/http-header-normalizer": "^4.2.6",
+    "bunyan": "^1.8.15"
+  },
+  "scripts": {
+    "bundle": "zip -r getPhotos . && mv getPhotos.zip ../../artifacts"
+  },
+  "keywords": [],
+  "author": "Tharindu Wickramasinghe",
+  "license": "MIT"
+}
