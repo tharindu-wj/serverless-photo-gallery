@@ -1,7 +1,7 @@
 # Photo Gallery App
 
 > Serverless web application built to showcase and share photos. 
-> Admin users can upload and others can see the photos. There are option to share public photos as well.
+> Admin users can upload and others can see the photos. There is an option to share public photos as well.
 
 ## Solution Diagram
 ![alt text](./github/solution-diagram.jpg)
@@ -29,8 +29,8 @@ npm run deploy
 Please follow below steps manually since those are yet to be implemented
 
 - Grant API Gateway permission to invoke Lambda function
-- Update output `CognitoSignupURL` to index.html a tag with id `#cognitoSignupUrl`
-- Update output `HttpApiEndpoint` to /frontend/src/config baseUrl
+- Copy output `CognitoSignupURL` to index.html a tag with id `#cognitoSignupUrl`
+- Copy output `HttpApiEndpoint` to /frontend/src/config baseUrl
 - Run `npm run build` from the root directory
 - Upload /frontend index.html, error.html, and dist/ to static site S3 bucket
 - Create a user with username `john` in Cognito user pool

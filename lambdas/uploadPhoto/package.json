@@ -13,9 +13,7 @@
     "bunyan": "^1.8.15",
     "uuid": "^9.0.0"
   },
-  "scripts": {
-    "bundle": "zip -r uploadPhoto . && mv uploadPhoto.zip ../../artifacts"
-  },
+  "scripts": {},
   "keywords": [],
   "author": "Tharindu Wickramasinghe",
   "license": "MIT"

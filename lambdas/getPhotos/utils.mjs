@@ -1,4 +1,8 @@
-export const apiResponse = (statusCode, body, headers = {}) => ({
+export const apiResponse = (
+  statusCode,
+  body,
+  headers = { "Content-Type": "application/json" }
+) => ({
   statusCode,
   body: JSON.stringify(body),
   headers,

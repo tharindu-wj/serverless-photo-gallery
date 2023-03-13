@@ -14,7 +14,7 @@ const { baseUrl } = require("./config");
 
     const cognitoToken = localStorage.getItem("cognitoToken");
     let headers = {
-      "Content-Type": "multipart/form-data", // set content type header to multipart/form-data
+      "Content-Type": "multipart/form-data",
     };
     if (cognitoToken) {
       headers.Authorization = `Bearer ${cognitoToken}`;

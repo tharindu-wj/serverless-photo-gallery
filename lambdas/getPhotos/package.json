@@ -10,9 +10,7 @@
     "@middy/http-header-normalizer": "^4.2.6",
     "bunyan": "^1.8.15"
   },
-  "scripts": {
-    "bundle": "zip -r getPhotos . && mv getPhotos.zip ../../artifacts"
-  },
+  "scripts": {},
   "keywords": [],
   "author": "Tharindu Wickramasinghe",
   "license": "MIT"

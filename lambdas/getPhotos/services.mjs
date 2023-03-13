@@ -8,6 +8,7 @@ import {
 
 import config from "./config.mjs";
 
+// Get signed url from the S3 that can be access publicly
 export const getS3SignedUrl = async (key, options = { expiresIn: 3600 }) => {
   const params = {
     Bucket: config.photoS3Bucket,
@@ -18,6 +19,7 @@ export const getS3SignedUrl = async (key, options = { expiresIn: 3600 }) => {
   return await getSignedUrl(client, new GetObjectCommand(params), options);
 };
 
+// Get all the items from the table by scan operation
 export const getAllItemsFromPhotoTable = async () => {
   const params = {
     TableName: config.photoDynamoDbTable,

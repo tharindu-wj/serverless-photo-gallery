@@ -3,6 +3,7 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
 import config from "./config.mjs";
 
+// Upload photo to S3 with the given key
 export const uploadPhotoToS3 = async (photo, key) => {
   const params = {
     Bucket: config.photoS3Bucket,
@@ -14,6 +15,7 @@ export const uploadPhotoToS3 = async (photo, key) => {
   return await s3.send(new PutObjectCommand(params));
 };
 
+// Add photo meta data to DynamoDB table
 export const addMetaDataToDynamoDb = async (key, data) => {
   const params = {
     TableName: config.photoDynamoDbTable,

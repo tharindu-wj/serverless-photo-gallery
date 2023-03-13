@@ -18,7 +18,7 @@ export default async (event, context) => {
 
   let dataToBeSend = allPhotos;
 
-  // Need to send only public images when request from the public route
+  // Need to send only public images when request came from the public route
   if (!isProtectedRoute(event)) {
     dataToBeSend = allPhotos.filter((item) => item.visibility === "public");
   }
